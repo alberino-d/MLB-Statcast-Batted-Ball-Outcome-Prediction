@@ -1,6 +1,7 @@
 # Get/Create Statcast Datasets
 
 # import libraries
+import pandas as pd
 from pybaseball.datahelpers.statcast_utils import add_spray_angle
 from pybaseball import statcast
 
@@ -10,6 +11,19 @@ df = statcast(
     start_dt='2025-03-27',
     end_dt='2025-09-28'
 )
+
+# add sprint speed
+sprint_df = pd.read_csv('sprint_speed.csv')
+sprint_data = sprint_df[["player_id", "sprint_speed"]]
+
+df = df.merge(
+    sprint_data,
+    how="left",
+    left_on="batter",
+    right_on="player_id"
+)
+df.drop(columns="player_id", inplace=True)
+df.dropna(subset=['sprint_speed'])
 
 
 # create batted balls dataset

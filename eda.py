@@ -1,7 +1,6 @@
 # Perform EDA
 
 # import libraries
-import csv
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -15,6 +14,7 @@ features = [
     'launch_speed',
     'launch_angle',
     'spray_angle',
+    'sprint_speed',
     'bb_type'
 ]
 
@@ -34,9 +34,9 @@ hits = [
 # print(bbdf[features + ['events']].describe(include=[object]))
 
 
-# Plot Feature Distributions
+# plot feature distributions
 
-# Numeric Features
+# numeric features
 def plot_feature_dist(feature):
     # fix column name
     feature_name = feature.replace('_', ' ').title()
@@ -73,7 +73,7 @@ def plot_feature_dist(feature):
 
     plt.show()
 
-# Categorical Features
+# categorical features
 fig, ax = plt.subplots(figsize=(5,3))
 
 sns.barplot(
@@ -101,8 +101,51 @@ plt.yticks([])
 
 fig.suptitle('Pct. of Batted Balls Resulting in Hits by Type')
 
-plt.show()
+# plt.show()
 
 # print(plot_feature_dist('launch_speed'))
 # print(plot_feature_dist('launch_angle'))
 # print(plot_feature_dist('spray_angle'))
+# print(plot_feature_dist('sprint_speed'))
+
+
+# create feature relationship graphs
+def plot_feature_interaction(feature_A, feature_B):
+    # fix column name
+    featureA_name = feature_A.replace('_', ' ').title()
+    featureB_name = feature_B.replace('_', ' ').title()
+
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    # batting average by feature bucket
+    pivot = bbdf.pivot_table(
+        values='is_hit',
+        index=pd.cut(bbdf[feature_A], bins=20),
+        columns=pd.cut(bbdf[feature_B], bins=20),
+        aggfunc='mean',
+        observed=True
+    )
+
+    # rename columns/rows
+    pivot.columns = [np.round(i.mid, 1) for i in pivot.columns]
+    pivot.index = [np.round(i.mid, 1) for i in pivot.index]
+
+    # heatmap
+    sns.heatmap(pivot.iloc[::-1], cmap='coolwarm', annot=True, fmt='.2f', cbar=False)
+
+    # customize title/axes/ticks
+    plt.title(f'Batting Average by {featureA_name}/{featureB_name} Bin', fontsize=18)
+    plt.xlabel(f'{featureB_name}')
+    plt.ylabel(f'{featureA_name}')
+    plt.xticks(rotation=0)
+
+    plt.tight_layout()
+
+    plt.show()
+
+# print(plot_feature_interaction('launch_speed', 'launch_angle'))
+# print(plot_feature_interaction('launch_speed', 'spray_angle'))
+# print(plot_feature_interaction('launch_angle', 'spray_angle'))
+# print(plot_feature_interaction('launch_speed', 'sprint_speed'))
+# print(plot_feature_interaction('launch_angle', 'sprint_speed'))
+# print(plot_feature_interaction('spray_angle', 'sprint_speed'))
