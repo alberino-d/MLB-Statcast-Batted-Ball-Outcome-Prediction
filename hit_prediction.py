@@ -13,7 +13,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
-from sklearn.metrics import accuracy_score, f1_score, log_loss, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, log_loss, confusion_matrix, ConfusionMatrixDisplay
 
 
 # create DataFrame from batted ball data
@@ -85,6 +85,8 @@ plt.title('Correlation Matrix: Features & Hit Outcome')
 
 # create models
 
+# logistic models
+
 # logistic regression without sprint
 logistic_preprocessor_wo = ColumnTransformer(
     transformers=[
@@ -109,9 +111,7 @@ lmwo_scores = cross_val_score(
 )
 # print(lmwo_scores.mean())
 
-# logistic_model_wo = logistic_model_wo.fit(X_te_wo, y_te)
-
-
+logistic_model_wo = logistic_model_wo.fit(X_tr_wo, y_tr)
 
 
 # logistic model with sprint
@@ -138,7 +138,7 @@ lmw_scores = cross_val_score(
 )
 # print(lmw_scores.mean())
 
-# logistic_model_with = logistic_model_with.fit(X_te_with, y_te)
+logistic_model_with = logistic_model_with.fit(X_tr_with, y_tr)
 
 
 
@@ -216,25 +216,25 @@ def test_random_forest_hyperparameters(numeric_features, X_tr, y_tr):
 # print(test_random_forest_hyperparameters(numeric_without_sprint, X_tr_wo, y_tr))
 # ^^^Returns max_depth=15 and n_estimators=500 (inputting values directly into test model for computational conservation)
 
-# rfwo_preprocessor = ColumnTransformer(
-#         transformers=[
-#             ('numeric', 'passthrough', numeric_without_sprint),
-#             ('categorical', OneHotEncoder(), categorical_features)
-#         ]
-#     )
+rfwo_preprocessor = ColumnTransformer(
+        transformers=[
+            ('numeric', 'passthrough', numeric_without_sprint),
+            ('categorical', OneHotEncoder(), categorical_features)
+        ]
+    )
 
-# rfwo_model = Pipeline(
-#                 steps=[
-#                     ('preprocessor', rfwo_preprocessor),
-#                     ('model', RandomForestClassifier(
-#                         n_estimators=500,
-#                         max_depth=15,
-#                         random_state=100
-#                     ))
-#                 ]
-#             )
+rfwo_model = Pipeline(
+                steps=[
+                    ('preprocessor', rfwo_preprocessor),
+                    ('model', RandomForestClassifier(
+                        n_estimators=500,
+                        max_depth=15,
+                        random_state=100
+                    ))
+                ]
+            )
 
-# random_forest_model_wo = rfwo_model.fit(X_te_wo, y_te)
+random_forest_model_wo = rfwo_model.fit(X_tr_wo, y_tr)
 
 
 # random forest model with sprint
@@ -242,25 +242,25 @@ def test_random_forest_hyperparameters(numeric_features, X_tr, y_tr):
 # print(test_random_forest_hyperparameters(numeric_with_sprint, X_tr_with, y_tr))
 # ^^^Returns max_depth=15 and n_estimators=500 (inputting values directly into test model for computational conservation)
 
-# rfwith_preprocessor = ColumnTransformer(
-#         transformers=[
-#             ('numeric', 'passthrough', numeric_with_sprint),
-#             ('categorical', OneHotEncoder(), categorical_features)
-#         ]
-#     )
+rfwith_preprocessor = ColumnTransformer(
+        transformers=[
+            ('numeric', 'passthrough', numeric_with_sprint),
+            ('categorical', OneHotEncoder(), categorical_features)
+        ]
+    )
 
-# rfwith_model = Pipeline(
-#                 steps=[
-#                     ('preprocessor', rfwith_preprocessor),
-#                     ('model', RandomForestClassifier(
-#                         n_estimators=500,
-#                         max_depth=15,
-#                         random_state=100
-#                     ))
-#                 ]
-#             )
+rfwith_model = Pipeline(
+                steps=[
+                    ('preprocessor', rfwith_preprocessor),
+                    ('model', RandomForestClassifier(
+                        n_estimators=500,
+                        max_depth=15,
+                        random_state=100
+                    ))
+                ]
+            )
 
-# random_forest_model_with = rfwith_model.fit(X_te_with, y_te)
+random_forest_model_with = rfwith_model.fit(X_tr_with, y_tr)
 
 
 
@@ -355,11 +355,11 @@ xgbwo_model = Pipeline(
                 ]
             )
 
-xgboost_model_without = xgbwo_model.fit(X_te_wo, y_te)
+xgboost_model_wo = xgbwo_model.fit(X_tr_wo, y_tr)
 
 
 # XGBoost model with sprint
-print(test_xgboost_hyperparameters(numeric_with_sprint, X_tr_with, y_tr))
+# print(test_xgboost_hyperparameters(numeric_with_sprint, X_tr_with, y_tr))
 # ^^^Returns learning_rate=0.05 and n_estimators=500 (inputting values directly into test model for computational conservation)
 
 
@@ -381,4 +381,105 @@ xgbwith_model = Pipeline(
                 ]
             )
 
-xgboost_model_with = xgbwith_model.fit(X_te_with, y_te)
+xgboost_model_with = xgbwith_model.fit(X_tr_with, y_tr)
+
+
+
+
+# evaluate/compare performance of all models
+
+# metrics
+def evaluate_model(model, X_te, y_te):
+    """
+    Returns .......
+
+    Parameters:
+    model
+    X_te (DataFrame)
+    y_te (Series)
+
+    Return:
+    roc_auc (float)
+    accuracy (float)
+    precision (float)
+    recall (float)
+    f1 (float)
+    conf_mat (confusion_matrix)
+    """
+    preds = model.predict(X_te)
+    probas = model.predict_proba(X_te)[:,1]
+
+    roc_auc = roc_auc_score(y_te, probas)
+    accuracy = accuracy_score(y_te, preds)
+    precision = precision_score(y_te, preds)
+    recall = recall_score(y_te, preds)
+    f1= f1_score(y_te, preds)
+    conf_mat = confusion_matrix(y_te, preds)
+
+    return roc_auc, accuracy, precision, recall, f1, conf_mat
+
+# logistic regression without sprint
+lrwo_roc_auc, lrwo_accuracy, lrwo_precision, lrwo_recall, lrwo_f1, lrwo_conf_mat = evaluate_model(logistic_model_wo, X_te_wo, y_te)
+print('Logistic Regression w/o Sprint Performance:')
+print(f'Roc-Auc Score: {lrwo_roc_auc:.4f}')
+print(f'Accuracy Score: {lrwo_accuracy:.4f}')
+print(f'Precision Score: {lrwo_precision:.4f}')
+print(f'Recall Score: {lrwo_recall:.4f}')
+print(f'f1 Score: {lrwo_f1:.4f}')
+ConfusionMatrixDisplay(lrwo_conf_mat, display_labels=['Out', 'Hit']).plot(cmap='Blues')
+plt.show()
+
+# logistic regression with sprint
+lrwith_roc_auc, lrwith_accuracy, lrwith_precision, lrwith_recall, lrwith_f1, lrwith_conf_mat = evaluate_model(logistic_model_with, X_te_with, y_te)
+print('Logistic Regression w/ Sprint Performance:')
+print(f'Roc-Auc Score: {lrwith_roc_auc:.4f}')
+print(f'Accuracy Score: {lrwith_accuracy:.4f}')
+print(f'Precision Score: {lrwith_precision:.4f}')
+print(f'Recall Score: {lrwith_recall:.4f}')
+print(f'f1 Score: {lrwith_f1:.4f}')
+ConfusionMatrixDisplay(lrwith_conf_mat, display_labels=['Out', 'Hit']).plot(cmap='Blues')
+plt.show()
+
+# random forest without sprint
+rfwo_roc_auc, rfwo_accuracy, rfwo_precision, rfwo_recall, rfwo_f1, rfwo_conf_mat = evaluate_model(random_forest_model_wo, X_te_wo, y_te)
+print('Random Forest w/o Sprint Performance:')
+print(f'Roc-Auc Score: {rfwo_roc_auc:.4f}')
+print(f'Accuracy Score: {rfwo_accuracy:.4f}')
+print(f'Precision Score: {rfwo_precision:.4f}')
+print(f'Recall Score: {rfwo_recall:.4f}')
+print(f'f1 Score: {rfwo_f1:.4f}')
+ConfusionMatrixDisplay(rfwo_conf_mat, display_labels=['Out', 'Hit']).plot(cmap='Blues')
+plt.show()
+
+# random forest with sprint
+rfwith_roc_auc, rfwith_accuracy, rfwith_precision, rfwith_recall, rfwith_f1, rfwith_conf_mat = evaluate_model(random_forest_model_with, X_te_with, y_te)
+print('Random Forest w/ Sprint Performance:')
+print(f'Roc-Auc Score: {rfwith_roc_auc:.4f}')
+print(f'Accuracy Score: {rfwith_accuracy:.4f}')
+print(f'Precision Score: {rfwith_precision:.4f}')
+print(f'Recall Score: {rfwith_recall:.4f}')
+print(f'f1 Score: {rfwith_f1:.4f}')
+ConfusionMatrixDisplay(rfwith_conf_mat, display_labels=['Out', 'Hit']).plot(cmap='Blues')
+plt.show()
+
+# XGBoost without sprint
+xgbwo_roc_auc, xgbwo_accuracy, xgbwo_precision, xgbwo_recall, xgbwo_f1, xgbwo_conf_mat = evaluate_model(xgboost_model_wo, X_te_wo, y_te)
+print('XGBoost w/o Sprint Performance:')
+print(f'Roc-Auc Score: {xgbwo_roc_auc:.4f}')
+print(f'Accuracy Score: {xgbwo_accuracy:.4f}')
+print(f'Precision Score: {xgbwo_precision:.4f}')
+print(f'Recall Score: {xgbwo_recall:.4f}')
+print(f'f1 Score: {xgbwo_f1:.4f}')
+ConfusionMatrixDisplay(xgbwo_conf_mat, display_labels=['Out', 'Hit']).plot(cmap='Blues')
+plt.show()
+
+# XGBoost with sprint
+xgbwith_roc_auc, xgbwith_accuracy, xgbwith_precision, xgbwith_recall, xgbwith_f1, xgbwith_conf_mat = evaluate_model(xgboost_model_with, X_te_with, y_te)
+print('XGBoost w/ Sprint Performance:')
+print(f'Roc-Auc Score: {xgbwith_roc_auc:.4f}')
+print(f'Accuracy Score: {xgbwith_accuracy:.4f}')
+print(f'Precision Score: {xgbwith_precision:.4f}')
+print(f'Recall Score: {xgbwith_recall:.4f}')
+print(f'f1 Score: {xgbwith_f1:.4f}')
+ConfusionMatrixDisplay(xgbwith_conf_mat, display_labels=['Out', 'Hit']).plot(cmap='Blues')
+plt.show()
