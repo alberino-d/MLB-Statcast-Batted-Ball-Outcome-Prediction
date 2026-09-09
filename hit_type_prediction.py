@@ -52,3 +52,66 @@ bbdf['outcome'] = np.where(
     bbdf['events'],
     'out'
 )
+
+
+# create train/test split
+train_df, test_df = train_test_split(
+    bbdf,
+    test_size=0.2,
+    random_state=100,
+    stratify=bbdf['outcome']
+    )
+
+X_tr_wo = train_df[features_without_sprint]
+X_tr_with = train_df[features_with_sprint]
+
+X_te_wo = test_df[features_without_sprint]
+X_te_with = test_df[features_with_sprint]
+
+y_tr = train_df['is_hit']
+y_te = test_df['is_hit']
+
+
+# plot correlations
+
+# correlation matrix
+outcome_dummies = pd.get_dummies(
+    train_df['outcome'],
+    prefix='outcome',
+    dtype=int
+)
+
+corr_data = pd.concat(
+    [
+        train_df[numeric_with_sprint],
+        outcome_dummies
+    ],
+    axis=1
+)
+
+corr_matrix = corr_data.corr()
+
+
+# correlation heatmap
+
+outcome_columns = outcome_dummies.columns
+
+outcome_corr = corr_matrix.loc[
+    numeric_with_sprint,
+    outcome_columns
+]
+
+plt.figure(figsize=(8, 5))
+
+sns.heatmap(
+    outcome_corr,
+    annot=True,
+    cmap="coolwarm",
+    fmt=".2f",
+    vmin=-1,
+    vmax=1
+)
+
+plt.title("Feature Correlations with Hit Outcomes")
+
+plt.show()

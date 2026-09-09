@@ -225,19 +225,19 @@ def plot_feature_by_outcome(feature):
 
 
 # launch speed/angle per outcome
-sns.scatterplot(
-    data=bbdf,
-    x="launch_speed",
-    y="launch_angle",
-    hue="outcome",
-    alpha=0.5
-)
+# sns.scatterplot(
+#     data=bbdf,
+#     x="launch_speed",
+#     y="launch_angle",
+#     hue="outcome",
+#     alpha=0.5
+# )
 
-plt.title(
-    "Exit Velocity vs. Launch Angle by BB Outcome"
-)
+# plt.title(
+#     "Exit Velocity vs. Launch Angle by BB Outcome"
+# )
 
-plt.xlabel("Exit Velocity")
-plt.ylabel("Launch Angle")
+# plt.xlabel("Exit Velocity")
+# plt.ylabel("Launch Angle")
 
-plt.show()
+# plt.show()
