@@ -1,7 +1,6 @@
 # Create Hit Prediction Models
 
 # import libraries
-import csv
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -44,6 +43,8 @@ features_with_sprint = (
 )
 
 bbdf = bbdf.dropna(subset=features_with_sprint)
+
+
 
 
 # create train/test split
@@ -491,53 +492,54 @@ def evaluate_model(model, X_te, y_te):
 # evaluate best model mechanics
 
 # best logistic regression model
-log_preprocessor = logistic_model_with.named_steps['preprocessor']
-log_model = logistic_model_with.named_steps['model']
-log_feat_names = log_preprocessor.get_feature_names_out()
+# log_preprocessor = logistic_model_with.named_steps['preprocessor']
+# log_model = logistic_model_with.named_steps['model']
+# log_feat_names = log_preprocessor.get_feature_names_out()
 
-print("Logistic Model w/ Sprint Coefficients:")
-for i, feature in enumerate(log_feat_names):
-    print(f"{feature}: {log_model.coef_[0, i]:.2f}")
-print(f"b: {log_model.intercept_[0]:.2f}")
+# print("Logistic Model w/ Sprint Coefficients:")
+# for i, feature in enumerate(log_feat_names):
+#     print(f"{feature}: {log_model.coef_[0, i]:.2f}")
+# print(f"b: {log_model.intercept_[0]:.2f}")
+
 
 # best random forest model
-rf_preprocessor = random_forest_model_wo.named_steps['preprocessor']
-rf_model = random_forest_model_wo.named_steps ['model']
-rf_feat_names = rf_preprocessor.get_feature_names_out()
+# rf_preprocessor = random_forest_model_wo.named_steps['preprocessor']
+# rf_model = random_forest_model_wo.named_steps ['model']
+# rf_feat_names = rf_preprocessor.get_feature_names_out()
 
-rf_feat_import = rf_model.feature_importances_
+# rf_feat_import = rf_model.feature_importances_
 
-idx = np.argsort(rf_feat_import).astype(int)
-rf_feat_list = [rf_feat_names[i] for i in idx][::-1]
-rf_feat_import = rf_feat_import[idx][::-1]
+# idx = np.argsort(rf_feat_import).astype(int)
+# rf_feat_list = [rf_feat_names[i] for i in idx][::-1]
+# rf_feat_import = rf_feat_import[idx][::-1]
     
-sns.barplot(x=rf_feat_import, y=rf_feat_list, color='lightblue', edgecolor='black')
-plt.xlabel('Feature Importance')
+# sns.barplot(x=rf_feat_import, y=rf_feat_list, color='lightblue', edgecolor='black')
+# plt.xlabel('Feature Importance')
 
-plt.show()
+# plt.show()
 
 
 # best XGBoost model
-def create_shap_graph(model, X_tr):
-    """
-    Prints SHAP model
+# def create_shap_graph(model, X_tr):
+#     """
+#     Prints SHAP model
 
-    Parameters:
-    model (Pipeline)
-    X_tr (DataFrame)
-    """
-    preprocessor = model.named_steps['preprocessor']
+#     Parameters:
+#     model (Pipeline)
+#     X_tr (DataFrame)
+#     """
+#     preprocessor = model.named_steps['preprocessor']
 
-    model = model.named_steps['model']
+#     model = model.named_steps['model']
 
-    X_tr_transformed = preprocessor.transform(X_tr)
+#     X_tr_transformed = preprocessor.transform(X_tr)
 
-    feature_names = preprocessor.get_feature_names_out()
+#     feature_names = preprocessor.get_feature_names_out()
 
-    explainer = shap.TreeExplainer(model)
+#     explainer = shap.TreeExplainer(model)
 
-    shap_values = explainer.shap_values(X_tr_transformed)
+#     shap_values = explainer.shap_values(X_tr_transformed)
 
-    shap.summary_plot(shap_values, X_tr_transformed, feature_names=feature_names)
+#     shap.summary_plot(shap_values, X_tr_transformed, feature_names=feature_names)
 
-create_shap_graph(xgboost_model_with, X_tr_with)
+# create_shap_graph(xgboost_model_with, X_tr_with)

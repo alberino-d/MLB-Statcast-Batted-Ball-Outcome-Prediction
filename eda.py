@@ -25,6 +25,15 @@ hits = [
     'home_run'
 ]
 
+# create outcomes column
+outcomes = ['out', 'single', 'double', 'triple', 'home_run']
+
+bbdf['outcome'] = np.where(
+    bbdf['events'].isin(outcomes),
+    bbdf['events'],
+    'out'
+)
+
 
 # describe numerical features
 # print(bbdf[features].describe(include=[np.number]).round(2))
@@ -33,6 +42,10 @@ hits = [
 # describe categorical features
 # print(bbdf[features + ['events']].describe(include=[object]))
 
+
+
+
+# Hit v. Out EDA
 
 # plot feature distributions
 
@@ -74,32 +87,32 @@ def plot_feature_dist(feature):
     plt.show()
 
 # categorical features
-fig, ax = plt.subplots(figsize=(5,3))
+# fig, ax = plt.subplots(figsize=(5,3))
 
-sns.barplot(
-    bbdf.groupby('bb_type')['events'].apply(lambda x: x.isin(hits).mean()),
-    linewidth=1,
-    edgecolor='black',
-    color='lightblue'
-)
+# sns.barplot(
+#     bbdf.groupby('bb_type')['events'].apply(lambda x: x.isin(hits).mean()),
+#     linewidth=1,
+#     edgecolor='black',
+#     color='lightblue'
+# )
 
-for p in ax.patches:
-    h = p.get_height()
-    ax.text(p.get_x()+p.get_width()/2,
-            h+0.02,
-            f'{h*100:.1f}%',
-            ha='center'
-    )
+# for p in ax.patches:
+#     h = p.get_height()
+#     ax.text(p.get_x()+p.get_width()/2,
+#             h+0.02,
+#             f'{h*100:.1f}%',
+#             ha='center'
+#     )
 
-plt.xlabel('Batted Ball Type')
-ax.set_xticks(['fly_ball', 'ground_ball', 'line_drive', 'popup'])
-ax.set_xticklabels(['Fly Ball', 'Ground Ball', 'Line Drive', 'Popup'])
+# plt.xlabel('Batted Ball Type')
+# ax.set_xticks(['fly_ball', 'ground_ball', 'line_drive', 'popup'])
+# ax.set_xticklabels(['Fly Ball', 'Ground Ball', 'Line Drive', 'Popup'])
 
-plt.ylim(0, 0.7)
-plt.ylabel('Hit Percentage')
-plt.yticks([])
+# plt.ylim(0, 0.7)
+# plt.ylabel('Hit Percentage')
+# plt.yticks([])
 
-fig.suptitle('Pct. of Batted Balls Resulting in Hits by Type')
+# fig.suptitle('Pct. of Batted Balls Resulting in Hits by Type')
 
 # plt.show()
 
@@ -143,9 +156,88 @@ def plot_feature_interaction(feature_A, feature_B):
 
     plt.show()
 
-# print(plot_feature_interaction('launch_speed', 'launch_angle'))
-# print(plot_feature_interaction('launch_speed', 'spray_angle'))
-# print(plot_feature_interaction('launch_angle', 'spray_angle'))
-# print(plot_feature_interaction('launch_speed', 'sprint_speed'))
-# print(plot_feature_interaction('launch_angle', 'sprint_speed'))
-# print(plot_feature_interaction('spray_angle', 'sprint_speed'))
+# plot_feature_interaction('launch_speed', 'launch_angle')
+# plot_feature_interaction('launch_speed', 'spray_angle')
+# plot_feature_interaction('launch_angle', 'spray_angle')
+# plot_feature_interaction('launch_speed', 'sprint_speed')
+# plot_feature_interaction('launch_angle', 'sprint_speed')
+# plot_feature_interaction('spray_angle', 'sprint_speed')
+
+
+
+
+
+
+
+
+
+# Hit Outcome EDA
+
+# plot outcome frequencies
+
+# sns.countplot(
+#     data=bbdf,
+#     x='outcome',
+#     order=[
+#         'out',
+#         'single',
+#         'double',
+#         'triple',
+#         'home_run'
+#     ]
+# )
+
+# plt.title('Distribution of Outcomes')
+# plt.xlabel('BB Outcome')
+# plt.ylabel('Number of Batted Balls')
+
+# plt.show()
+
+
+# plot features by outcome
+def plot_feature_by_outcome(feature):
+    feature_name = feature.replace('_', ' ').title()
+
+    sns.boxplot(
+        data=bbdf,
+        x="outcome",
+        y=feature,
+        order=[
+            "out",
+            "single",
+            "double",
+            "triple",
+            "home_run"
+        ]
+    )
+
+    plt.title(f"{feature_name} by BB Outcome")
+
+    plt.xlabel("BB Outcome")
+    plt.ylabel(f"{feature_name}")
+
+    plt.show()
+
+# plot_feature_by_outcome('launch_speed')
+# plot_feature_by_outcome('launch_angle')
+# plot_feature_by_outcome('spray_angle')
+# plot_feature_by_outcome('sprint_speed')
+
+
+# launch speed/angle per outcome
+sns.scatterplot(
+    data=bbdf,
+    x="launch_speed",
+    y="launch_angle",
+    hue="outcome",
+    alpha=0.5
+)
+
+plt.title(
+    "Exit Velocity vs. Launch Angle by BB Outcome"
+)
+
+plt.xlabel("Exit Velocity")
+plt.ylabel("Launch Angle")
+
+plt.show()
