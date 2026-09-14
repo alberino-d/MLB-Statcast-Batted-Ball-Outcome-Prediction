@@ -394,7 +394,7 @@ xgboost_model_with = xgbwith_model.fit(X_tr_with, y_tr)
 # metrics
 def evaluate_model(model, X_te, y_te):
     """
-    Returns .......
+    Returns roc-auc, accuracy, precision, recall, f1, and confusion matrix for model
 
     Parameters:
     model

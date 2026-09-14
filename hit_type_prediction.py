@@ -427,4 +427,30 @@ xgboost_model_with = xgbwith_model.fit(X_tr_with, y_tr)
 # evaluate/compare performance of all models
 
 # metrics
+def evaluate_model(model, X_te, y_te):
+    """
+    Returns roc-auc, accuracy, precision, recall, f1, and confusion matrix for model
 
+    Parameters:
+    model
+    X_te (DataFrame)
+    y_te (Series)
+
+    Return:
+    f1_macro (float)
+    f1_weighted (float)
+    accuracy (float)
+    precision (float)
+    recall (float)
+    conf_mat (confusion_matrix)
+    """
+    preds = model.predict(X_te)
+
+    f1_macro = f1_score(y_te, preds, average='macro')
+    f1_weighted = f1_score(y_te, preds, average='weighted')
+    accuracy = accuracy_score(y_te, preds)
+    precision = precision_score(y_te, preds)
+    recall = recall_score(y_te, preds)
+    conf_mat = confusion_matrix(y_te, preds)
+
+    return f1_macro, f1_weighted, accuracy, precision, recall, conf_mat
