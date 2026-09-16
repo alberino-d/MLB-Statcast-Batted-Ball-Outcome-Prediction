@@ -13,7 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 import shap
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, ConfusionMatrixDisplay, classification_report
 
 
 # create DataFrame from batted ball data
@@ -398,7 +398,7 @@ xgboost_model_wo = xgbwo_model.fit(X_tr_wo, y_tr_xgb)
 
 
 # XGBoost model with sprint
-print(test_xgboost_hyperparameters(numeric_with_sprint, X_tr_with, y_tr_xgb))
+# print(test_xgboost_hyperparameters(numeric_with_sprint, X_tr_with, y_tr_xgb))
 # ^^^Returns learning_rate=0.2 and n_estimators=200 (inputting values directly into test model for computational conservation)
 
 xgbwith_preprocessor = ColumnTransformer(
@@ -419,7 +419,7 @@ xgbwith_model = Pipeline(
                 ]
             )
 
-xgboost_model_with = xgbwith_model.fit(X_tr_with, y_tr)
+xgboost_model_with = xgbwith_model.fit(X_tr_with, y_tr_xgb)
 
 
 
@@ -427,7 +427,7 @@ xgboost_model_with = xgbwith_model.fit(X_tr_with, y_tr)
 # evaluate/compare performance of all models
 
 # metrics
-def evaluate_model(model, X_te, y_te):
+def evaluate_model(model, X_te, y_te, label_encoder=None):
     """
     Returns roc-auc, accuracy, precision, recall, f1, and confusion matrix for model
 
@@ -443,14 +443,118 @@ def evaluate_model(model, X_te, y_te):
     precision (float)
     recall (float)
     conf_mat (confusion_matrix)
+    class_report (classification_report)
     """
     preds = model.predict(X_te)
+
+    if label_encoder is not None:
+        preds = label_encoder.inverse_transform(preds)
+
+    labels = ['out', 'single', 'double', 'triple', 'home_run']
 
     f1_macro = f1_score(y_te, preds, average='macro')
     f1_weighted = f1_score(y_te, preds, average='weighted')
     accuracy = accuracy_score(y_te, preds)
-    precision = precision_score(y_te, preds)
-    recall = recall_score(y_te, preds)
-    conf_mat = confusion_matrix(y_te, preds)
+    precision = precision_score(y_te, preds, average='macro')
+    recall = recall_score(y_te, preds, average='macro')
+    conf_mat = confusion_matrix(y_te, preds, labels=labels)
+    class_report = classification_report(y_te, preds, labels=labels)
 
-    return f1_macro, f1_weighted, accuracy, precision, recall, conf_mat
+    return f1_macro, f1_weighted, accuracy, precision, recall, conf_mat, class_report
+
+# logistic regression without sprint
+# lrwo_f1_macro, lrwo_f1_weighted, lrwo_accuracy, lrwo_precision, lrwo_recall, lrwo_conf_mat, lrwo_class_report = evaluate_model(logistic_model_wo, X_te_wo, y_te)
+# print('Logistic Regression w/o Sprint Performance:')
+# print(f'f1 Macro Score: {lrwo_f1_macro:.4f}')
+# print(f'f1 Weighted Score: {lrwo_f1_weighted:.4f}')
+# print(f'Accuracy Score: {lrwo_accuracy:.4f}')
+# print(f'Precision Score: {lrwo_precision:.4f}')
+# print(f'Recall Score: {lrwo_recall:.4f}')
+# ConfusionMatrixDisplay(lrwo_conf_mat, display_labels=['Out', 'Single', 'Double', 'Triple', 'Home Run']).plot(cmap='Blues')
+# plt.show()
+# print(f'Classification Report:')
+# print(lrwo_class_report)
+
+# logisitc regression with sprint
+# lrwith_f1_macro, lrwith_f1_weighted, lrwith_accuracy, lrwith_precision, lrwith_recall, lrwith_conf_mat, lrwith_class_report = evaluate_model(logistic_model_with, X_te_with, y_te)
+# print('Logistic Regression w/ Sprint Performance:')
+# print(f'f1 Macro Score: {lrwith_f1_macro:.4f}')
+# print(f'f1 Weighted Score: {lrwith_f1_weighted:.4f}')
+# print(f'Accuracy Score: {lrwith_accuracy:.4f}')
+# print(f'Precision Score: {lrwith_precision:.4f}')
+# print(f'Recall Score: {lrwith_recall:.4f}')
+# ConfusionMatrixDisplay(lrwith_conf_mat, display_labels=['Out', 'Single', 'Double', 'Triple', 'Home Run']).plot(cmap='Blues')
+# plt.show()
+# print(f'Classification Report:')
+# print(lrwith_class_report)
+
+# random forest without sprint
+# rfwo_f1_macro, rfwo_f1_weighted, rfwo_accuracy, rfwo_precision, rfwo_recall, rfwo_conf_mat, rfwo_class_report = evaluate_model(random_forest_model_wo, X_te_wo, y_te)
+# print('Random Forest w/o Sprint Performance:')
+# print(f'f1 Macro Score: {rfwo_f1_macro:.4f}')
+# print(f'f1 Weighted Score: {rfwo_f1_weighted:.4f}')
+# print(f'Accuracy Score: {rfwo_accuracy:.4f}')
+# print(f'Precision Score: {rfwo_precision:.4f}')
+# print(f'Recall Score: {rfwo_recall:.4f}')
+# ConfusionMatrixDisplay(rfwo_conf_mat, display_labels=['Out', 'Single', 'Double', 'Triple', 'Home Run']).plot(cmap='Blues')
+# plt.show()
+# print(f'Classification Report:')
+# print(rfwo_class_report)
+# investigate singular ball that was predicted triple
+# rfwo_predictions = random_forest_model_wo.predict(X_te_wo)
+# mistake = X_te_wo[
+#     (y_te == 'double') &
+#     (rfwo_predictions == 'triple')
+# ]
+# print(mistake)
+
+# random forest with sprint
+# rfwith_f1_macro, rfwith_f1_weighted, rfwith_accuracy, rfwith_precision, rfwith_recall, rfwith_conf_mat, rfwith_class_report = evaluate_model(random_forest_model_with, X_te_with, y_te)
+# print('Random Forest w/ Sprint Performance:')
+# print(f'f1 Macro Score: {rfwith_f1_macro:.4f}')
+# print(f'f1 Weighted Score: {rfwith_f1_weighted:.4f}')
+# print(f'Accuracy Score: {rfwith_accuracy:.4f}')
+# print(f'Precision Score: {rfwith_precision:.4f}')
+# print(f'Recall Score: {rfwith_recall:.4f}')
+# ConfusionMatrixDisplay(rfwith_conf_mat, display_labels=['Out', 'Single', 'Double', 'Triple', 'Home Run']).plot(cmap='Blues')
+# plt.show()
+# print(f'Classification Report:')
+# print(rfwith_class_report)
+
+# XGBoost without sprint
+# xgbwo_f1_macro, xgbwo_f1_weighted, xgbwo_accuracy, xgbwo_precision, xgbwo_recall, xgbwo_conf_mat, xgbwo_class_report = evaluate_model(xgboost_model_wo, X_te_wo, y_te, label_encoder)
+# print('XGBoost w/o Sprint Performance:')
+# print(f'f1 Macro Score: {xgbwo_f1_macro:.4f}')
+# print(f'f1 Weighted Score: {xgbwo_f1_weighted:.4f}')
+# print(f'Accuracy Score: {xgbwo_accuracy:.4f}')
+# print(f'Precision Score: {xgbwo_precision:.4f}')
+# print(f'Recall Score: {xgbwo_recall:.4f}')
+# ConfusionMatrixDisplay(xgbwo_conf_mat, display_labels=['Out', 'Single', 'Double', 'Triple', 'Home Run']).plot(cmap='Blues')
+# plt.show()
+# print(f'Classification Report:')
+# print(xgbwo_class_report)
+# investigate balls that were predicted triple
+# xgbwo_predictions = xgboost_model_wo.predict(X_te_wo)
+# mistake = X_te_wo[
+#     (xgbwo_predictions == 4)
+# ]
+# print(mistake)
+
+# XGBoost with sprint
+# xgbwith_f1_macro, xgbwith_f1_weighted, xgbwith_accuracy, xgbwith_precision, xgbwith_recall, xgbwith_conf_mat, xgbwith_class_report = evaluate_model(xgboost_model_with, X_te_with, y_te, label_encoder)
+# print('XGBoost w/ Sprint Performance:')
+# print(f'f1 Macro Score: {xgbwith_f1_macro:.4f}')
+# print(f'f1 Weighted Score: {xgbwith_f1_weighted:.4f}')
+# print(f'Accuracy Score: {xgbwith_accuracy:.4f}')
+# print(f'Precision Score: {xgbwith_precision:.4f}')
+# print(f'Recall Score: {xgbwith_recall:.4f}')
+# ConfusionMatrixDisplay(xgbwith_conf_mat, display_labels=['Out', 'Single', 'Double', 'Triple', 'Home Run']).plot(cmap='Blues')
+# plt.show()
+# print(f'Classification Report:')
+# print(xgbwith_class_report)
+# investigate balls that were predicted triple
+# xgbwith_predictions = xgboost_model_with.predict(X_te_with)
+# mistake = X_te_with[
+#     (xgbwith_predictions == 4)
+# ]
+# print(mistake)
