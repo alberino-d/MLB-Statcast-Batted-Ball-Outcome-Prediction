@@ -36,10 +36,3 @@ batted_balls['is_hit'] = (
 ).astype(int)
 
 batted_balls.to_csv('batted_balls.csv', index=False)
-
-
-# create hits dataset
-hits = df[df['events'].isin(hit_outcomes)].copy()
-hits = add_spray_angle(hits)
-
-hits.to_csv('hits.csv', index=False)
