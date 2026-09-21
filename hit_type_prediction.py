@@ -502,11 +502,11 @@ def evaluate_model(model, X_te, y_te, label_encoder=None):
 # print(rfwo_class_report)
 # investigate singular ball that was predicted triple
 # rfwo_predictions = random_forest_model_wo.predict(X_te_wo)
-# mistake = X_te_wo[
+# mistake1 = X_te_wo[
 #     (y_te == 'double') &
 #     (rfwo_predictions == 'triple')
 # ]
-# print(mistake)
+# print(mistake1)
 
 # random forest with sprint
 # rfwith_f1_macro, rfwith_f1_weighted, rfwith_accuracy, rfwith_precision, rfwith_recall, rfwith_conf_mat, rfwith_class_report = evaluate_model(random_forest_model_with, X_te_with, y_te)
@@ -535,10 +535,10 @@ def evaluate_model(model, X_te, y_te, label_encoder=None):
 # print(xgbwo_class_report)
 # investigate balls that were predicted triple
 # xgbwo_predictions = xgboost_model_wo.predict(X_te_wo)
-# mistake = X_te_wo[
+# mistake2 = X_te_wo[
 #     (xgbwo_predictions == 4)
 # ]
-# print(mistake)
+# print(mistake2)
 
 # XGBoost with sprint
 # xgbwith_f1_macro, xgbwith_f1_weighted, xgbwith_accuracy, xgbwith_precision, xgbwith_recall, xgbwith_conf_mat, xgbwith_class_report = evaluate_model(xgboost_model_with, X_te_with, y_te, label_encoder)
@@ -554,7 +554,74 @@ def evaluate_model(model, X_te, y_te, label_encoder=None):
 # print(xgbwith_class_report)
 # investigate balls that were predicted triple
 # xgbwith_predictions = xgboost_model_with.predict(X_te_with)
-# mistake = X_te_with[
+# mistake3 = X_te_with[
 #     (xgbwith_predictions == 4)
 # ]
-# print(mistake)
+# print(mistake3)
+
+
+
+
+# evaluate best model mechanics
+
+# best logistic regression model
+# log_preprocessor = logistic_model_with.named_steps['preprocessor']
+# log_model = logistic_model_with.named_steps['model']
+# log_feat_names = log_preprocessor.get_feature_names_out()
+
+# print("Logistic Model w/ Sprint Coefficients:")
+# for class_idx, class_name in enumerate(log_model.classes_):
+#     print(f"\n{class_name}:")
+#     for i, feature in enumerate(log_feat_names):
+#         print(f"{feature}: {log_model.coef_[class_idx, i]:.2f}")
+#     print(f"b: {log_model.intercept_[class_idx]:.2f}")
+
+
+# best random forest model
+# rf_preprocessor = random_forest_model_wo.named_steps['preprocessor']
+# rf_model = random_forest_model_wo.named_steps ['model']
+# rf_feat_names = rf_preprocessor.get_feature_names_out()
+
+# rf_feat_import = rf_model.feature_importances_
+
+# idx = np.argsort(rf_feat_import).astype(int)
+# rf_feat_list = [rf_feat_names[i] for i in idx][::-1]
+# rf_feat_import = rf_feat_import[idx][::-1]
+    
+# sns.barplot(x=rf_feat_import, y=rf_feat_list, color='lightblue', edgecolor='black')
+# plt.xlabel('Feature Importance')
+
+# plt.show()
+
+
+# best XGBoost model
+# def create_shap_graph(model, X_tr):
+#     """
+#     Prints SHAP model
+
+#     Parameters:
+#     model (Pipeline)
+#     X_tr (DataFrame)
+#     """
+#     preprocessor = model.named_steps['preprocessor']
+
+#     model = model.named_steps['model']
+
+#     X_tr_transformed = preprocessor.transform(X_tr)
+
+#     feature_names = preprocessor.get_feature_names_out()
+
+#     explainer = shap.TreeExplainer(model)
+
+#     shap_values = explainer.shap_values(X_tr_transformed)
+
+#     for class_idx, class_name in enumerate(model.classes_):
+#         print(class_name)
+
+#         shap.summary_plot(
+#             shap_values[:, :, class_idx],
+#             X_tr_transformed,
+#             feature_names=feature_names
+#         )
+
+# create_shap_graph(xgboost_model_with, X_tr_with)
