@@ -23,6 +23,7 @@ df = df.merge(
     right_on="player_id"
 )
 df.drop(columns="player_id", inplace=True)
+
 df.dropna(subset=['sprint_speed'])
 
 
